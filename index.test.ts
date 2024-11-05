@@ -10,16 +10,17 @@ describe('GET /', () => {
 */
 
 describe('POST /api/newsletter/signup', () => {
-    it('it should accept email as json return 200', async () => {
-        {const response = await request(app)
+  it('it should accept email as json return 200', async () => {
+    {
+      const response = await request(app)
         .post('/api/newsletter/signup')
-        .send({email: 'cjfinn99@gmail.com'})//JSON payload
+        .send({ email: 'cjfinn101@gmail.com' }) //JSON payload
         .set('Accept', 'application/json'); //JSON header
-        console.log(response.body.message)
-        expect(response.body.success).toBe(true);
-       }
-    });
+      console.log(response.body.message);
+      expect(response.body.success).toBe(true);
+    }
   });
+});
 
 /*
 describe('DELETE /api/newsletter/signup', () => {

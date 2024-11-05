@@ -1,16 +1,17 @@
 // db.ts
-import { MongoClient } from "mongodb";
+import { Db, MongoClient } from 'mongodb';
 
-const uri = "mongodb+srv://connorfinn:StrangeChew22@cluster0.8n9oscj.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0";
+const uri =
+  'mongodb+srv://connorfinn:StrangeChew22@cluster0.8n9oscj.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0';
 const client = new MongoClient(uri);
 
-export async function connectToDatabase() {
+export async function connectToDatabase(): Promise<Db> {
   try {
     await client.connect();
-    console.log("Connected to MongoDB!");
-    return client.db("subs"); // Replace 'myDatabase' with your database name
+    console.log('Connected to MongoDB!');
+    return client.db('subs'); // Replace 'myDatabase' with your database name
   } catch (error) {
-    console.error("Failed to connect to MongoDB", error);
+    console.error('Failed to connect to MongoDB', error);
     throw error;
   }
 }
