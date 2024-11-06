@@ -1,19 +1,14 @@
-// db.ts
-import { Db, MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-const uri =
-  'mongodb+srv://connorfinn:StrangeChew22@cluster0.8n9oscj.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0';
-const client = new MongoClient(uri);
+dotenv.config();
 
-export async function connectToDatabase(): Promise<Db> {
+export const connectDB = async (): Promise<void> => {
   try {
-    await client.connect();
-    console.log('Connected to MongoDB!');
-    return client.db('subs'); // Replace 'myDatabase' with your database name
+    const connection = await mongoose.connect(process.env.ATLAS_URI!);
+    console.log(`MongoDB Connected: ${connection.connection.host}`);
   } catch (error) {
-    console.error('Failed to connect to MongoDB', error);
-    throw error;
+    console.error('Error connecting to MongoDB:', error);
+    process.exit(1);
   }
-}
-
-export { client };
+};
