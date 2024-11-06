@@ -1,9 +1,13 @@
 import express, { Request, Response } from 'express';
-import { createSub, getSubByEmail, deleteSubByEmail } from './subService';
+import {
+  getSubByEmail,
+  deleteSubByEmail,
+  updateSubByEmail,
+} from './subService';
 import { randomBytes } from 'crypto';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
-import {rateLimit} from 'express-rate-limit';
+import { rateLimit } from 'express-rate-limit';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -51,54 +55,61 @@ app.post('/api/newsletter/signup', async (req: Request, res: Response) => {
     return;
   }
   const checkUser = await getSubByEmail(subEmail);
-  if (checkUser) {
-    //Email already exists
-    if (checkUser.isConfirmed) {
-      //Email is confirmed
-      res.status(422).json({
-        success: false,
-        message: 'Already Subscribed!',
-      });
-      return;
-    } else {
-      //Email is not confirmed
-      res.status(404).json({
-        success: false,
-        message: 'Not confirmed, please check your email',
-      });
-      return;
-    }
-  }
-  const newUser = await createSub({
-    email: subEmail,
-    isConfirmed: false,
-    confirmationToken: token,
-    createdAt: Date.now(),
-    confirmedAt: undefined,
-  });
-  if (!newUser) {
-    //Unable to add
-    res.status(500).json({
+  if (!checkUser) {
+    //User does not exists
+    res.status(404).json({
       success: false,
-      message: 'Failure: Did not add email to database',
+      message: 'User does not exist',
     });
     return;
   }
-  const success = await sendEmail(subEmail, token);
-  if (success) {
-    res.status(200).json({
-      success: true,
-      message: 'Success: confirmation email sent.',
+  //User must exists in database
+  if (checkUser.marketing == undefined) {
+    //First time user sign up for newsletter
+    const response = await updateSubByEmail(subEmail, false, token);
+    if (response) {
+      //Successfully updated user
+      const result = await sendEmail(subEmail, token);
+      if (result) {
+        //Successfully sent email
+        res.status(200).json({
+          success: true,
+          message: 'Success: confirmation email sent.',
+        });
+      } else {
+        //Unsuccessfully sent email
+        res.status(500).json({
+          success: false,
+          message: 'Failure: could not send confirmation email.',
+        });
+      }
+    } else {
+      //Unsuccessfull database update
+      res.status(500).json({
+        success: false,
+        message: 'Failure: could not update database',
+      });
+    }
+    return;
+  }
+  //User signed up before (Marketable exists)
+  if (checkUser.marketing.active > 0) {
+    //Email is already confirmed
+    res.status(409).json({
+      success: false,
+      message: 'Already Subscribed!',
     });
     return;
   } else {
-    res.status(500).json({
+    //Email is not confirmed
+    res.status(404).json({
       success: false,
-      message: 'Failure: Sending confirmation email failed.',
+      message: 'Not confirmed, please check your email',
     });
     return;
   }
 });
+
 app.delete('/api/newsletter/signup', async (req: Request, res: Response) => {
   let unsubEmail;
   try {
@@ -112,7 +123,7 @@ app.delete('/api/newsletter/signup', async (req: Request, res: Response) => {
     return; //End response sent
   }
   const result = await deleteSubByEmail(unsubEmail);
-  if (!result || !result.acknowledged) {
+  if (!result) {
     res.status(400).json({
       success: false,
       message: `Failed to delete email: ${unsubEmail}, not in database `,
@@ -124,6 +135,7 @@ app.delete('/api/newsletter/signup', async (req: Request, res: Response) => {
     message: `Successfully deleted email: ${unsubEmail}`,
   });
 });
+
 async function sendEmail(email: string, token: string): Promise<boolean> {
   try {
     await mg.messages.create(process.env.MAIL_DOMAIN!, {
@@ -151,8 +163,7 @@ async function sendEmail(email: string, token: string): Promise<boolean> {
 }
 </style>`,
     });
-  } catch (error) {
-    console.error(`Error: ${error}`);
+  } catch {
     return false;
   }
   return true;
@@ -164,8 +175,6 @@ function isValidEmail(email: string): boolean {
 }
 
 const PORT = 8000;
-app.listen(PORT, () => {
-  console.log(`Now listening on port ${PORT}`);
-});
+app.listen(PORT);
 
 export default app;

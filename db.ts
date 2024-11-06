@@ -1,14 +1,10 @@
+// db.ts
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 dotenv.config();
+const uri = process.env.ATLAS_URI;
 
-export const connectDB = async (): Promise<void> => {
-  try {
-    const connection = await mongoose.connect(process.env.ATLAS_URI!);
-    console.log(`MongoDB Connected: ${connection.connection.host}`);
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    process.exit(1);
-  }
-};
+export async function connectToDatabase(): Promise<void> {
+  await mongoose.connect(uri!);
+}

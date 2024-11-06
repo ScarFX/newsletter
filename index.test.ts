@@ -16,7 +16,6 @@ describe('POST /api/newsletter/signup', () => {
         .post('/api/newsletter/signup')
         .send({ email: 'cjfinn101@gmail.com' }) //JSON payload
         .set('Accept', 'application/json'); //JSON header
-      console.log(response.body.message);
       expect(response.body.success).toBe(true);
     }
   });

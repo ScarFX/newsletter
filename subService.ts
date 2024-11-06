@@ -1,57 +1,40 @@
 // userService.ts
-import { Db, DeleteResult, ObjectId } from 'mongodb';
-import { Sub } from './subModel';
+import { IUser, User, IMarketing } from '@librechat/api-keys';
 import { connectToDatabase } from './db';
 
-let db: Db;
+connectToDatabase(); // Ensure database connection is established
 
-async function getDatabase(): Promise<Db> {
-  if (!db) {
-    db = await connectToDatabase();
-  }
-  return db;
+export async function getSubByEmail(email: string): Promise<IUser | null> {
+  return await User.findOne({ email: email }).exec();
 }
 
-export async function createSub(sub: Sub): Promise<Sub> {
-  const db = await getDatabase();
-  const result = await db.collection<Sub>('subscribers').insertOne(sub);
-  return { ...sub, _id: result.insertedId };
-}
-
-export async function getSubById(subId: string): Promise<Sub | null> {
-  const db = await getDatabase();
-  return db
-    .collection<Sub>('subscribers')
-    .findOne({ _id: new ObjectId(subId) });
-}
-
-export async function getSubByEmail(email: string): Promise<Sub | null> {
-  const db = await getDatabase();
-  return db.collection<Sub>('subscribers').findOne({ email: email });
-}
-
-export async function deleteSubByEmail(
-  email: string
-): Promise<DeleteResult | null> {
-  const db = await getDatabase();
-  return db.collection<Sub>('subscribers').deleteOne({ email: email });
-}
-
-export async function updateSub(
-  subId: string,
-  updateData: Partial<Sub>
-): Promise<boolean> {
-  const db = await getDatabase();
-  const result = await db
-    .collection<Sub>('subscribers')
-    .updateOne({ _id: new ObjectId(subId) }, { $set: updateData });
-  return result.modifiedCount > 0;
-}
-
-export async function deleteSub(subId: string): Promise<boolean> {
-  const db = await getDatabase();
-  const result = await db
-    .collection<Sub>('subscribers')
-    .deleteOne({ _id: new ObjectId(subId) });
+export async function deleteSubByEmail(email: string): Promise<boolean> {
+  const result = await User.deleteOne({ email: email });
   return result.deletedCount > 0;
+}
+
+export async function updateSubByEmail(
+  email: string,
+  confirmed: boolean,
+  confirmationToken: string
+): Promise<boolean> {
+  let marketing: IMarketing;
+  if (confirmed) {
+    //confirmed
+    marketing = {
+      active: Math.floor(Date.now() / 1000),
+      confirmationToken: confirmationToken,
+    };
+  } else {
+    //not confirmed
+    marketing = {
+      active: -1,
+      confirmationToken: confirmationToken,
+    };
+  }
+  const result = await User.updateOne(
+    { email: email },
+    { $set: { marketing: marketing } }
+  );
+  return result.modifiedCount > 0;
 }
