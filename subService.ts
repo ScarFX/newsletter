@@ -1,5 +1,6 @@
 // userService.ts
-import { IUser, User, IMarketing } from '@librechat/api-keys';
+import { IUser, User } from '@librechat/api-keys';
+import { Token } from './subModel';
 import { connectToDatabase } from './db';
 
 connectToDatabase(); // Ensure database connection is established
@@ -9,7 +10,8 @@ export async function getSubByEmail(email: string): Promise<IUser | null> {
 }
 
 export async function deleteSubByEmail(email: string): Promise<boolean> {
-  const result = await User.deleteOne({ email: email });
+  const result = await Token.deleteOne({ email: email });
+  await User.updateOne({ email: email }, { $unset: { active: 1 } });
   return result.deletedCount > 0;
 }
 
@@ -18,23 +20,25 @@ export async function updateSubByEmail(
   confirmed: boolean,
   confirmationToken: string
 ): Promise<boolean> {
-  let marketing: IMarketing;
+  let active: number;
   if (confirmed) {
-    //confirmed
-    marketing = {
-      active: Math.floor(Date.now() / 1000),
-      confirmationToken: confirmationToken,
-    };
+    //confirmed, token document ttl
+    active = Math.floor(Date.now() / 1000);
   } else {
-    //not confirmed
-    marketing = {
-      active: -1,
-      confirmationToken: confirmationToken,
-    };
+    //not confirmed create Token document
+    active = -1;
+    const user = await getSubByEmail(email);
+    const token = new Token({
+      userId: user!._id,
+      email: email,
+      token: confirmationToken,
+    });
+    await token.save();
   }
   const result = await User.updateOne(
     { email: email },
-    { $set: { marketing: marketing } }
+    { $set: { active: active } }
   );
+
   return result.modifiedCount > 0;
 }
