@@ -45,7 +45,6 @@ app.post('/api/newsletter/signup', async (req: Request, res: Response) => {
     });
     return; //End response sent
   }
-  const token: string = randomBytes(32).toString('hex');
   //Check if sub exits
   if (!isValidEmail(subEmail)) {
     res.status(422).json({
@@ -64,8 +63,9 @@ app.post('/api/newsletter/signup', async (req: Request, res: Response) => {
     return;
   }
   //User must exists in database
-  if (checkUser.marketing == undefined) {
+  if (checkUser.newsletterActive == undefined) {
     //First time user sign up for newsletter
+    const token: string = randomBytes(32).toString('hex');
     const response = await updateSubByEmail(subEmail, false, token);
     if (response) {
       //Successfully updated user
@@ -92,8 +92,8 @@ app.post('/api/newsletter/signup', async (req: Request, res: Response) => {
     }
     return;
   }
-  //User signed up before (Marketable exists)
-  if (checkUser.marketing.active > 0) {
+  //User signed up before (newsletterActive exists)
+  if (checkUser.newsletterActive > 0) {
     //Email is already confirmed
     res.status(409).json({
       success: false,
