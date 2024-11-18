@@ -1,7 +1,8 @@
 {
     "name": "demo",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "./dist/index.js",
+    "type": "module",
     "scripts": {
         "build": "rimraf dist && npx tsc",
         "prestart": "npm run build",
@@ -28,16 +29,20 @@
         "express-rate-limit": "^7.4.1",
         "form-data": "^4.0.1",
         "globals": "^15.12.0",
+        "jest": "^29.7.0",
         "mailgun.js": "^10.2.3",
         "mongodb": "^6.10.0",
+        "mongodb-memory-server": "^10.1.2",
         "mongoose": "^8.8.0",
         "nodemon": "^2.0.12",
         "rimraf": "^6.0.1",
-        "ts-jest": "^29.2.5"
+        "stripe": "^17.3.1"
     },
     "keywords": [],
     "description": "",
     "devDependencies": {
+        "@babel/core": "^7.26.0",
+        "@babel/preset-env": "^7.26.0",
         "@babel/preset-typescript": "^7.26.0",
         "@types/chai": "^5.0.1",
         "@types/express": "^5.0.0",
@@ -46,18 +51,16 @@
         "@types/supertest": "^6.0.2",
         "@typescript-eslint/eslint-plugin": "^8.13.0",
         "@typescript-eslint/parser": "^8.13.0",
+        "babel-jest": "^29.7.0",
         "chai": "^5.1.2",
         "eslint": "^9.14.0",
         "eslint-config-prettier": "^9.1.0",
+        "eslint-import-resolver-typescript": "^3.6.3",
         "eslint-plugin-import": "^2.31.0",
         "mocha": "^10.8.2",
         "supertest": "^7.0.0",
+        "ts-jest": "^29.2.5",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.3"
-    },
-    "jest": {
-        "transform": {
-            "^.+\\.tsx?$": "ts-jest"
-        }
     }
 }
