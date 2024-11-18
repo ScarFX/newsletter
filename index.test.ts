@@ -10,6 +10,7 @@ let mongoServer: MongoMemoryServer;
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
+  process.env.ATLAS_URI = mongoUri;
   await mongoose.connect(mongoUri);
 });
 
