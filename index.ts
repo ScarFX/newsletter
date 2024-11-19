@@ -3,7 +3,7 @@ import {
   getSubByEmail,
   deleteSubByEmail,
   updateSubByEmail,
-} from './subService';
+} from './subService.js';
 import { randomBytes } from 'crypto';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
@@ -15,7 +15,7 @@ const app = express();
 
 app.use(express.json());
 
-const mailgun = new Mailgun(formData);
+const mailgun = new Mailgun.default(formData);
 const mg = mailgun.client({
   username: 'api',
   key: process.env.MAILGUN_API_KEY!,

@@ -1,6 +1,6 @@
 // userService.ts
 import { IUser, User, Token, IToken } from '@librechat/api-keys';
-import { connectToDatabase } from './db';
+import { connectToDatabase } from './db.js';
 import { DeleteResult } from 'mongoose';
 
 connectToDatabase(); // Ensure database connection is established

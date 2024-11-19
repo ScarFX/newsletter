@@ -48,6 +48,7 @@ describe('Newsletter Signup Tests', () => {
     },
     stripeCustomerId: 'cus_1234567890',
     agreements: {
+      deviceInfo: 'windows10',
       termsOfService: {
         agreed: true,
         timestamp: new Date('2023-01-01'),
